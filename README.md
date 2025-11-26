@@ -23,12 +23,12 @@ This is an opportunity for you to gain experience combining all the narrative an
 
 Your project will be assessed on the following:
 
-Includes a visual narrative flow that uses a title, (sub)headers, labels, and annotations to get the audience interested, understand, and be able to visually explore data concerning the questions presented;
+- Includes a visual narrative flow that uses a title, (sub)headers, labels, and annotations to get the audience interested, understand, and be able to visually explore data concerning the questions presented;
 
-Develops two or more non-trivial questions that are visually explorable with data, relevant to the marketing executive’s responsiblities, and related to the student’s project;
+- Develops two or more non-trivial questions that are visually explorable with data, relevant to the marketing executive’s responsiblities, and related to the student’s project;
 
-Includes three or more different forms of interactivity for data graphics, one of which includes linking two graphics. The interactivities directly relate — provide views, context, or focus — to data concerning the questions presented;
+- Includes three or more different forms of interactivity for data graphics, one of which includes linking two graphics. The interactivities directly relate — provide views, context, or focus — to data concerning the questions presented;
 
-Communication as a whole consistently uses color and typographic principles to link related concepts together, and aligns and organizes information to guide audience through the narrative. Goes beyond imitating examples; and
+- Communication as a whole consistently uses color and typographic principles to link related concepts together, and aligns and organizes information to guide audience through the narrative. Goes beyond imitating examples; and
 
-individual contribution to group work.
+- individual contribution to group work.
