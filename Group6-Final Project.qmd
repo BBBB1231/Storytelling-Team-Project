@@ -1,0 +1,62 @@
+---
+title: "Group6 - Final Project"
+author:
+  - name: Ben Hsiao (5133), ...
+    role: "Student"
+    email: jh5133@columbia.edu
+    affiliations:
+      - name: Columbia University
+  - name: Dr. Scott Spencer
+    role: "Professor"
+    email: sas2375@columbia.edu
+    affiliations:
+      - name: Columbia University
+date: 12/3/2025
+date-format: long
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+  html:
+    toc: true
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    code-link: true
+    theme:
+      light: flatly
+      dark: darkly
+    embed-resources: true
+execute:
+  eval: true
+  warning: false
+  message: false
+  error: false
+  echo: true
+---
+
+# Preliminary setup {-}
+
+Load libraries to access functions we'll use in this analysis.
+
+
+```{r}
+library(tidyverse) # the usual
+
+```
+
+
+
+
+# References cited {-}
+
+
+
+Properly **Cite** all resources used in completing this assignment:
+
+
+
+# Submission --- reproducibility {-}
+
+
