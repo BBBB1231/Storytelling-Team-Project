@@ -1,6 +1,8 @@
 # Storytelling-Team-Project
 This final project is dedicated to the APAN 5800 Fall25 - Analytics Term Project :: interactive communication and Final Presentation
 
+Link: https://docs.google.com/document/d/1jGb2oT8uaiTg8UPw4EGAK2mkTguJy3ELMPEEF25nHu8/edit?usp=sharing
+
 Create a visual, communication with interactive, explanatory data graphics that enable the chief marketing executive at your selected organization to explore insights into at least two nontrivial questions concerning your project in the context of his or her CMO responsibilities at the organization.
 
 For guidance on the responsibilities of a marketing executive — and their general knowledge of data and data graphics — review Spencer (2024 Links to an external site.), §. 1.2.1.2 and the cited references Carr (2019 Links to an external site.) and Carr (2018 Links to an external site.).
