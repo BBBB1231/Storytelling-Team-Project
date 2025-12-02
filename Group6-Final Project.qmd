@@ -1,9 +1,9 @@
 ---
 title: "Group6 - Final Project"
 author:
-  - name: Ben Hsiao (5133), ...
+  - names: Ben Hsiao (5133), Agustina Kohen (5501)
     role: "Student"
-    email: jh5133@columbia.edu
+    emails: jh5133@columbia.edu, ak5501@columbia.edu
     affiliations:
       - name: Columbia University
   - name: Dr. Scott Spencer
@@ -46,7 +46,23 @@ library(tidyverse) # the usual
 
 ```
 
+#Introduction
 
+Road transportation is a major contributor to urban air pollution, and recent data indicate that cars and vans account for 48% of global transportation CO₂ emissions—the largest share among all transportation modes [1]. As Tesla works to accelerate the transition to sustainable energy, this challenge also highlights a strategic opportunity: many of the most polluted U.S. regions continue to have low EV adoption and limited charging access, restricting both environmental gains and market growth. To address this gap, we will present a data analysis that combines EPA Air Quality System (AQS) data, Department of Energy EV registration data, and charging infrastructure records and hollistically understand how EV adoption relates to air-quality improvements and validate these patterns across regions. The resulting insights will guide Supercharger placement, targeted marketing, and public-sector partnerships—helping Tesla prioritize high-impact, underserved markets while advancing measurable progress toward its sustainability mission.
+
+To fully understand the strategic potential of this analysis, it is important to consider current EV adoption trends and the specific information gaps that constrain Tesla’s ability to seize these opportunities. Tesla has proven to be an innovative and leading organization in the transportation sector. Tesla's brand is viewed as both luxurious and sustainable, appealing to a diverse range of customers. However, the end of the year is approaching, and by Q2 2025, the EV market share in the United States had decreased to 7.4%, indicating a year-over-year decline. Tesla’s market share in the EV market increased to 46%, but sales continue to decline by 10% annually [3]. The growth of sustainability-conscious consumers should lead to a boost in the EV market. 
+
+## The approach
+
+Tesla currently lacks a data-driven approach that compares the US counties with high air pollution and low EV adoption. We will analyze national data to understand which areas of the country are likely to drive market share growth if concerns about EV adoption are targeted. Additionally, by comparing the number of gas stations to the number of EV charging stations, we can attempt to understand the factors behind low EV adoption and make informed decisions to increase market share. 
+
+# Which states represent the highest-opportunity markets for Tesla because of their polution rates?
+
+
+# If we target those markets, what would be the estimated pollution reduction/The estimated revenue increase
+
+
+#Is it accessible for people to obtain an EV, and should we target the construction of charging stations as a solution to this problem? 
 
 
 # References cited {-}
