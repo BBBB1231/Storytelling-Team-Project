@@ -85,6 +85,185 @@ Next, we will examine **three key questions:**
 
 # If we target those markets, what would be the estimated pollution reduction/The estimated revenue increase
 
+# Interactive Graph #1: Pollution vs. EV Adoption Opportunity Map
+
+**Key Question:** Which states show the largest mismatch between pollution levels and EV adoption—highlighting where Tesla should accelerate Supercharger deployment?
+
+### Data Processing Strategy
+This visualization merges state-level PM2.5 pollution averages with EV adoption per 100k residents. After cleaning the data and removing states with missing values, each state was classified into four quadrants based on whether it falls above or below the national averages for pollution and EV adoption.
+
+```{r}
+# Read cleaned EV + Population data
+ev_state <- read_csv(
+  "ev_state_cleaned.csv",
+  show_col_types = FALSE
+)
+
+print("EV + population cleaned data:")
+head(ev_state)
+
+# Read Api data
+aqi_raw <- read_csv(
+  "Pollution.csv",
+  show_col_types = FALSE
+)
+
+head(aqi_raw, 20)
+colnames(aqi_raw)
+
+aqi_clean <- aqi_raw %>%
+  
+  rename(
+    state   = `Air Quality Statistics by County, 2023`,
+    county  = ...2,
+    fips    = ...3,
+    population = ...4,
+    pm25    = ...12     
+  ) %>%
+  
+  filter(!is.na(state), state != "State") %>%
+  
+  mutate(
+    pm25 = na_if(pm25, "ND"),
+    pm25 = as.numeric(pm25)
+  ) %>%
+  
+ 
+  group_by(state) %>%
+  summarise(
+    pm25 = mean(pm25, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+print("Cleaned AQI (PM2.5) data:")
+head(aqi_clean)
+
+#merged two data
+merged_state <- ev_state %>%
+  left_join(aqi_clean, by = "state") %>%
+  mutate(
+    pollution_ev_gap = pm25 - ev_per_100k/100
+  )
+
+head(merged_state)
+
+
+# Fig 1
+
+install.packages("dplyr")
+library(dplyr)
+library(plotly)
+
+# 1. Keep whole data
+merged_plot <- merged_state %>%
+  filter(!is.na(pm25), !is.na(ev_per_100k))
+
+# 2.Comupute the mean
+mean_pm25 <- mean(merged_plot$pm25, na.rm = TRUE)
+mean_ev   <- mean(merged_plot$ev_per_100k, na.rm = TRUE)
+
+#3. Define the state
+merged_plot <- merged_plot %>%
+  mutate(
+    zone = case_when(
+      pm25 >= mean_pm25 & ev_per_100k <= mean_ev ~
+        "High pollution / Low EV (Opportunity)",
+      pm25 >= mean_pm25 & ev_per_100k >  mean_ev ~
+        "High pollution / High EV",
+      pm25 <  mean_pm25 & ev_per_100k <= mean_ev ~
+        "Low pollution / Low EV",
+      TRUE ~ "Low pollution / High EV"
+    )
+  )
+
+# 4. Prepare for Loess line.
+loess_fit <- loess(ev_per_100k ~ pm25, data = merged_plot, span = 0.75)
+pm25_seq  <- seq(min(merged_plot$pm25), max(merged_plot$pm25), length.out = 200)
+ev_pred   <- predict(loess_fit, newdata = data.frame(pm25 = pm25_seq))
+
+line_df <- data.frame(
+  pm25 = pm25_seq,
+  ev   = ev_pred
+)
+
+# 5.Plot
+fig1 <- plot_ly(
+  data = merged_plot,
+  x = ~pm25,
+  y = ~ev_per_100k,
+  type = "scatter",
+  mode = "markers",
+  color = ~zone,                    
+  colors = c("#d73027","#fc8d59","#91bfdb","#4575b4"),
+  marker = list(
+    size = ~ (population / max(population)) * 25 + 5,  
+    opacity = 0.85,
+    line = list(color = "white", width = 0.5)
+  ),
+  text = ~paste(
+    "State:", state,
+    "<br>Zone:", zone,
+    "<br>PM2.5:", round(pm25, 1),
+    "<br>EV per 100k:", round(ev_per_100k, 0),
+    "<br>Population:", format(population, big.mark = ",")
+  ),
+  hoverinfo = "text"
+) %>%
+  layout(
+    title = "High Pollution vs Low EV Adoption by State",
+    xaxis = list(title = "PM2.5 Pollution Level"),
+    yaxis = list(title = "EV Adoption per 100k"),
+    legend = list(title = list(text = "State segment")),
+    shapes = list(
+     
+      list(
+        type = "line",
+        x0 = mean_pm25, x1 = mean_pm25,
+        y0 = 0, y1 = max(merged_plot$ev_per_100k, na.rm = TRUE),
+        line = list(dash = "dash", color = "grey")
+      ),
+      
+      list(
+        type = "line",
+        x0 = 0, x1 = max(merged_plot$pm25, na.rm = TRUE),
+        y0 = mean_ev, y1 = mean_ev,
+        line = list(dash = "dash", color = "grey")
+      )
+    ),
+    
+    annotations = list(
+      list(
+        x = max(merged_plot$pm25, na.rm = TRUE),
+        y = mean_ev * 0.4,
+        text = "High pollution<br>Low EV = Tesla\nopportunity",
+        showarrow = FALSE,
+        xanchor = "right",
+        yanchor = "middle",
+        font = list(size = 11)
+      )
+    )
+  )
+
+fig1 <- fig1 %>%
+  add_lines(
+    data = line_df,
+    x = ~pm25,
+    y = ~ev,
+    inherit = FALSE,
+    line = list(color = "red", width = 5),
+    name = "LOESS trend"
+  )
+
+fig1
+
+```
+
+### Analysis of the Trends
+
+1.  **Population Insight:** Bubble size represents state population, showing where EV adoption improvements would have the largest market impact.
+2.  **Trend Line Insight:** The red LOESS curve reveals that EV adoption peaks at moderate pollution levels.At high PM2.5 levels, EV adoption drops sharply, indicating weaker transition in the areas that need it most.
+3.  **Structural Barriers:** Low EV adoption in highly polluted states suggests barriers such as limited charging infrastructure, weak incentives, or low awareness.
+4.  **Strategic Opportunity for Tesla:** States in the High Pollution / Low EV Adoption quadrant represent underserved markets. Improving charging access in these regions could accelerate EV adoption and advance Tesla’s environmental mission.
 
 
 # Interactive Graph #3: The Rise of EV vs. Alternative Fuels
