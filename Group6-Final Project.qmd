@@ -37,6 +37,8 @@ format:
       light: flatly
       dark: darkly
     embed-resources: true
+filters:
+  - scrolly
 execute:
   eval: true
   warning: false
@@ -73,7 +75,7 @@ For the purpose of this analysis, we will primarily work with three datasets. On
 
 Next, we will examine **three key questions:** 
 - Which states represent the highest-opportunity markets for Tesla? (given their high pollution and low EV adoption)
-- From the high-opportunity markets, which have low access to EV charging stations?
+- Is the infrastructure gap closing? How does the growth of EV charging stations compare to other alternative energy solutions (like CNG, Biodiesel, or Hydrogen)?
 - How can changing the station infrastructure affect pollution and Tesla's revenue?
 
 
@@ -86,16 +88,30 @@ Next, we will examine **three key questions:**
 # If we target those markets, what would be the estimated pollution reduction/The estimated revenue increase
 
 
-
+::: scrolly
 # Interactive Graph #3: The Rise of EV vs. Alternative Fuels
-
+  ::: scrolly-body
+ ::: {.scrolly-step data-step="1"}
 **Key Question:** Is the infrastructure gap closing? How does the growth of EV charging stations compare to other alternative energy solutions (like CNG, Biodiesel, or Hydrogen)?
-
+ :::
+ ::: {.scrolly-step data-step="2"}
 ### Data Processing Strategy
 To answer this, we aggregated data from the Department of Energy's historical station counts (2018–2023). The raw data presents a challenge: EV data is often formatted as a composite string (e.g., `"1,200 | 3,500"` representing Stations | Outlets), whereas other fuel types are simple integers.
-
+ 
 The following code parses these strings to extract the unique **Station Count** (to ensure a fair comparison of locations, not plug counts) and categorizes them into "EV" (Tesla Red) and "Other Alternatives" (Greyscale) to visualize market dominance.
+ :::
+ ::: {.scrolly-step data-step="3"}
+### Analysis of the Trends
 
+This interactive visualization reveals a decisive trend in the alternative energy market:
+
+1.  **The "Winner" is Clear:** The red trajectory (EVs) shows exponential growth, rising from ~20,000 stations to over 60,000 in just five years.
+2.  **Stagnation of Competitors:** In sharp contrast, other alternative fuels such as CNG, Propane, and Biodiesel (the grey/black lines) have remained flat or stagnant.
+3.  **Strategic Implication:** The "Alternative Fuel War" is effectively over. The data suggests that infrastructure investment has coalesced around Electric Vehicles. For Tesla, this validates the strategy of aggressive Supercharger expansion—we are not just competing; we are defining the new standard for accessibility.
+ :::
+  :::
+
+  ::: scrolly-graphic
 ```{r}
 # Function to read and process all fuel types from a sheet
 process_fuel_sheet <- function(year, excel_path) {
@@ -257,14 +273,9 @@ fig <- fig %>% layout(
 
 fig
 ```
+ :::
 
-### Analysis of the Trends
-
-This interactive visualization reveals a decisive trend in the alternative energy market:
-
-1.  **The "Winner" is Clear:** The red trajectory (EVs) shows exponential growth, rising from ~20,000 stations to over 60,000 in just five years.
-2.  **Stagnation of Competitors:** In sharp contrast, other alternative fuels such as CNG, Propane, and Biodiesel (the grey/black lines) have remained flat or stagnant.
-3.  **Strategic Implication:** The "Alternative Fuel War" is effectively over. The data suggests that infrastructure investment has coalesced around Electric Vehicles. For Tesla, this validates the strategy of aggressive Supercharger expansion—we are not just competing; we are defining the new standard for accessibility.
+:::
 
 # Final Thoughts
 
