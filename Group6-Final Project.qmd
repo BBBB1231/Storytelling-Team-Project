@@ -1,9 +1,9 @@
 ---
 title: "Tesla Back On Track: In-depth analytics to uncover potential markets and raise market share"
-to:
-  - name: Mark Kyle Castro
-    role: "Chief Marketing/Sales Officer"
-    company: Tesla
+subtitle: |
+  Addressed to:
+  Mark Kyle Castro  
+  Chief Marketing/Sales Officer, Tesla
 authors:
   - name: Ben Hsiao (5133) 
     role: "Student"
@@ -56,6 +56,8 @@ library(tidyverse)
 library(plotly)
 library(readxl) 
 library(stringr)
+library(ggplot2)
+library(dplyr)
 ```
 
 
@@ -65,9 +67,13 @@ Road transportation is a major contributor to urban air pollution, and recent da
 
 To fully understand the strategic potential of this analysis, it is important to consider current EV adoption trends and the specific information gaps that constrain Tesla’s ability to seize these opportunities. Tesla has proven to be an innovative and leading organization in the transportation sector. Tesla's brand is viewed as both luxurious and sustainable, appealing to a diverse range of customers. However, as the end of the year approaches, the EV market share in the United States had decreased to 7.4% by Q2 2025, indicating a year-over-year decline. Tesla’s market share in the EV market increased to 46%, but sales continue to decline by 10% annually [4]. The growth of sustainability-conscious consumers should lead to a boost in the EV market. 
 
+## Background
+
+Simple research on national databases indicates that, until 2023, the number of electric vehicle registrations increased annually [1]. Therefore, there must be growth in other transportation sectors that are leading to a decline in market share. However, Tesla has an opportunity to identify areas that have not yet made the switch to alternative fuel and target them to increase its market share. When examining highly air-polluted areas, such as Prineville, Oregon, Akron, Ohio, or East Lansing, Michigan [2], there may be a business opportunity for Tesla to appeal to the sustainable consumer and enhance its ESG strategy by targeting these areas. However, there is a need to conduct an in-depth analysis to gain a comprehensive understanding of the target consumer and make informed investment decisions. 
+
 ## The approach
 
-Tesla currently lacks a data-driven approach that compares the US counties with high air pollution and low EV adoption. To address this gap, let us delve into a data analysis that combines EPA Air Quality System (AQS) data, Department of Energy EV registration data, and charging infrastructure records, thereby providing a holistic understanding of how EV adoption relates to air-quality improvements and validating these patterns across regions. The resulting insights will guide Supercharger placement, targeted marketing, and public-sector partnerships—helping Tesla prioritize high-impact, underserved markets while advancing measurable progress toward its sustainability mission.
+Tesla currently lacks a data-driven approach that compares the US counties with high air pollution and low EV adoption. To address this gap, let us examine a data analysis that combines EPA Air Quality System (AQS) data, Department of Energy EV registration data, and charging infrastructure records, thereby providing a comprehensive understanding of how EV adoption relates to air quality improvements and validating these patterns across regions. The resulting insights will guide Supercharger placement, targeted marketing, and public-sector partnerships—helping Tesla prioritize high-impact, underserved markets while advancing measurable progress toward its sustainability mission.
 
 ## Understanding the data
 
@@ -258,30 +264,16 @@ fig1
 3.  **Structural Barriers:** Low EV adoption in highly polluted states suggests barriers such as limited charging infrastructure, weak incentives, or low awareness.
 4.  **Strategic Opportunity for Tesla:** States in the High Pollution / Low EV Adoption quadrant represent underserved markets. Improving charging access in these regions could accelerate EV adoption and advance Tesla’s environmental mission.
 
-::: scrolly
+
 # Interactive Graph #3: The Rise of EV vs. Alternative Fuels
-  ::: scrolly-body
- ::: {.scrolly-step data-step="1"}
+
 **Key Question:** Is the infrastructure gap closing? How does the growth of EV charging stations compare to other alternative energy solutions (like CNG, Biodiesel, or Hydrogen)?
- :::
- ::: {.scrolly-step data-step="2"}
+
 ### Data Processing Strategy
 To answer this, we aggregated data from the Department of Energy's historical station counts (2018–2023). The raw data presents a challenge: EV data is often formatted as a composite string (e.g., `"1,200 | 3,500"` representing Stations | Outlets), whereas other fuel types are simple integers.
  
 The following code parses these strings to extract the unique **Station Count** (to ensure a fair comparison of locations, not plug counts) and categorizes them into "EV" (Tesla Red) and "Other Alternatives" (Greyscale) to visualize market dominance.
- :::
- ::: {.scrolly-step data-step="3"}
-### Analysis of the Trends
 
-This interactive visualization reveals a decisive trend in the alternative energy market:
-
-1.  **The "Winner" is Clear:** The red trajectory (EVs) shows exponential growth, rising from ~20,000 stations to over 60,000 in just five years.
-2.  **Stagnation of Competitors:** In sharp contrast, other alternative fuels such as CNG, Propane, and Biodiesel (the grey/black lines) have remained flat or stagnant.
-3.  **Strategic Implication:** The "Alternative Fuel War" is effectively over. The data suggests that infrastructure investment has coalesced around Electric Vehicles. For Tesla, this validates the strategy of aggressive Supercharger expansion—we are not just competing; we are defining the new standard for accessibility.
- :::
-  :::
-
-  ::: scrolly-graphic
 ```{r}
 # Function to read and process all fuel types from a sheet
 process_fuel_sheet <- function(year, excel_path) {
@@ -443,11 +435,21 @@ fig <- fig %>% layout(
 
 fig
 ```
- :::
+### Analysis of the Trends
 
-:::
+This interactive visualization reveals a decisive trend in the alternative energy market:
+
+1.  **The "Winner" is Clear:** The red trajectory (EVs) shows exponential growth, rising from ~20,000 stations to over 60,000 in just five years.
+2.  **Stagnation of Competitors:** In sharp contrast, other alternative fuels such as CNG, Propane, and Biodiesel (the grey/black lines) have remained flat or stagnant.
+3.  **Strategic Implication:** The "Alternative Fuel War" is effectively over. The data suggests that infrastructure investment has coalesced around Electric Vehicles. For Tesla, this validates the strategy of aggressive Supercharger expansion—we are not just competing; we are defining the new standard for accessibility.
 
 # Final Thoughts
+
+Our interactive analysis reveals a pattern that appears across the various views: states with higher pollution but relatively low EV adoption and limited charging access seem to offer the greatest opportunities for Tesla. These areas stand out because the environmental need is clear, yet people still face practical barriers that make it harder to choose an EV.
+
+A major issue is access. In many of these states, Supercharger coverage is limited, which naturally slows adoption. Expanding infrastructure in these regions could alleviate one of the biggest constraints for drivers, while also supporting local environmental goals. We also observe a steady correlation between charger availability and actual EV registrations—states with more chargers tend to have more EVs on the road, especially in areas with high pollution levels. This suggests that infrastructure isn’t just supporting demand; it can actually help create it.
+
+Despite significant progress in EV charging, many states remain underserved. This uneven access hinders adoption, especially in areas that most need cleaner options. Our results suggest a straightforward next step for Tesla: focus on states with high pollution and low adoption, and continue to expand chargers there to drive meaningful growth.
 
 # References cited {-}
 
