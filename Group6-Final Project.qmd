@@ -15,6 +15,11 @@ authors:
     email: ak5501@columbia.edu
     affiliations:
       - name: Columbia University
+  - name: ZixiaoXu (2569)
+    role: "Student"
+    email: zx2569@columbia.edu
+    affiliations:
+      - name: Columbia University
 date: 12/3/2025
 date-format: long
 format:
@@ -44,11 +49,13 @@ execute:
 
 Load libraries to access functions we'll use in this analysis.
 
-
 ```{r}
-library(tidyverse) # the usual
-
+library(tidyverse)
+library(plotly)
+library(readxl) 
+library(stringr)
 ```
+
 
 # Introduction
 
@@ -78,6 +85,186 @@ Next, we will examine **three key questions:**
 
 # If we target those markets, what would be the estimated pollution reduction/The estimated revenue increase
 
+
+
+# Interactive Graph #3: The Rise of EV vs. Alternative Fuels
+
+**Key Question:** Is the infrastructure gap closing? How does the growth of EV charging stations compare to other alternative energy solutions (like CNG, Biodiesel, or Hydrogen)?
+
+### Data Processing Strategy
+To answer this, we aggregated data from the Department of Energy's historical station counts (2018–2023). The raw data presents a challenge: EV data is often formatted as a composite string (e.g., `"1,200 | 3,500"` representing Stations | Outlets), whereas other fuel types are simple integers.
+
+The following code parses these strings to extract the unique **Station Count** (to ensure a fair comparison of locations, not plug counts) and categorizes them into "EV" (Tesla Red) and "Other Alternatives" (Greyscale) to visualize market dominance.
+
+```{r}
+# Function to read and process all fuel types from a sheet
+process_fuel_sheet <- function(year, excel_path) {
+  
+  # Read sheet as text to handle symbols safely
+  df <- suppressMessages(read_excel(excel_path, 
+                                    sheet = as.character(year), 
+                                    skip = 1, 
+                                    col_types = "text"))
+  
+  # 1. Clean Column Names: Remove footnotes like 'a', 'b', 'c' (e.g., "Hydrogenb" -> "Hydrogen")
+  # We convert to simple names for easier matching
+  colnames(df)[1] <- "State"
+  
+  # Define the map of fuel types we want to find
+  # Key = Display Name, Pattern = Regex to find column
+  fuel_types <- list(
+    "EV" = "Electric",
+    "Biodiesel" = "Biodiesel",
+    "CNG" = "CNG",
+    "E85" = "E85",
+    "Hydrogen" = "Hydrogen",
+    "LNG" = "LNG",
+    "Propane" = "Propane"
+  )
+  
+  results <- list()
+  
+  for (type_name in names(fuel_types)) {
+    pattern <- fuel_types[[type_name]]
+    col_idx <- grep(pattern, colnames(df), ignore.case = TRUE)
+    
+    if (length(col_idx) > 0) {
+      raw_col <- df[[col_idx[1]]] # Take the first match
+      
+      # Special handling for EV (Stations | Outlets)
+      if (type_name == "EV") {
+        clean_counts <- suppressWarnings(
+          raw_col %>%
+            str_split_fixed("\\|", 2) %>% 
+            .[,1] %>%                     
+            str_remove_all(",") %>%       
+            as.numeric()
+        )
+      } else {
+        # Standard handling for others (just remove commas)
+        clean_counts <- suppressWarnings(
+          raw_col %>%
+            str_remove_all(",") %>%
+            as.numeric()
+        )
+      }
+      
+      # Sum valid numbers (exclude Total row and NAs)
+      total_count <- sum(clean_counts[!df$State %in% c("Total") & !is.na(clean_counts)])
+      
+      results[[type_name]] <- data.frame(Year = year, Type = type_name, Count = total_count)
+    }
+  }
+  
+  return(bind_rows(results))
+}
+
+# 1. Define file path
+excel_file <- "historical-station-counts.xlsx" 
+
+# 2. Loop through years 2018-2023
+years <- 2018:2023
+all_data_list <- list()
+
+for (y in years) {
+  tryCatch({
+    all_data_list[[as.character(y)]] <- process_fuel_sheet(y, excel_file)
+  }, error = function(e) { 
+    message(paste("Skipping year", y, ":", e$message)) 
+  })
+}
+
+# 3. Combine All Data
+final_df <- bind_rows(all_data_list)
+```
+
+```{r}
+#| label: plot-fuel-comparison
+
+# Define Colors: EV gets Tesla Red, others get Greyscale/Black
+colors_map <- c(
+  "EV" = "#E82127",        # Tesla Red
+  "Biodiesel" = "#555555",
+  "CNG" = "#333333",
+  "E85" = "#777777",
+  "Hydrogen" = "#999999",
+  "LNG" = "#BBBBBB",
+  "Propane" = "#000000"    # Black
+)
+
+# Prepare the Plot
+fig <- plot_ly(final_df, x = ~Year, y = ~Count, color = ~Type, colors = colors_map) %>%
+  add_trace(type = 'scatter', mode = 'lines+markers', 
+            line = list(width = 3), marker = list(size = 6),
+            text = ~paste0("<b>", Type, "</b><br>Year: ", Year, "<br>Count: ", format(Count, big.mark = ",")),
+            hoverinfo = "text")
+
+# --- Create Dropdown Menu Buttons ---
+# Button Logic: "visible" expects a boolean vector matching the order of traces.
+# The order of traces depends on the alphabetical order of 'Type' usually, 
+# or the order they appear in data.
+# Types in data: Biodiesel, CNG, E85, EV, Hydrogen, LNG, Propane (7 types)
+# We need to construct the boolean vectors carefully.
+
+# Get unique types sorted (Plotly default sort)
+types <- sort(unique(final_df$Type))
+ev_index <- which(types == "EV") 
+
+# Helper function to create visibility vector
+# show_types: vector of types to show (e.g. c("EV", "CNG"))
+create_visibility <- function(show_types) {
+  as.list(types %in% show_types)
+}
+
+# Define Buttons
+updatemenus <- list(
+  list(
+    y = 1.15,
+    x = 0.1,
+    type = "dropdown",
+    active = 0,
+    buttons = list(
+      list(method = "restyle",
+           args = list("visible", create_visibility(types)),
+           label = "Show All"),
+      list(method = "restyle",
+           args = list("visible", create_visibility(c("EV", "E85"))),
+           label = "EV vs E85"),
+      list(method = "restyle",
+           args = list("visible", create_visibility(c("EV", "CNG"))),
+           label = "EV vs CNG"),
+      list(method = "restyle",
+           args = list("visible", create_visibility(c("EV", "Propane"))),
+           label = "EV vs Propane"),
+      list(method = "restyle",
+           args = list("visible", create_visibility(c("EV", "Biodiesel"))),
+           label = "EV vs Biodiesel")
+    )
+  )
+)
+
+# Apply Layout
+fig <- fig %>% layout(
+  title = list(text = "<b>Growth of EV vs. Other Alt. Fuels</b>", x = 0.05, y = 0.98),
+  xaxis = list(title = "", showgrid = FALSE),
+  yaxis = list(title = "Station Count", gridcolor = "#f2f2f2"),
+  updatemenus = updatemenus,
+  legend = list(x = 1, y = 0.5), # Move legend to side
+  paper_bgcolor = "white",
+  plot_bgcolor = "white",
+  margin = list(t = 80) # Add top margin for dropdown
+)
+
+fig
+```
+
+### Analysis of the Trends
+
+This interactive visualization reveals a decisive trend in the alternative energy market:
+
+1.  **The "Winner" is Clear:** The red trajectory (EVs) shows exponential growth, rising from ~20,000 stations to over 60,000 in just five years.
+2.  **Stagnation of Competitors:** In sharp contrast, other alternative fuels such as CNG, Propane, and Biodiesel (the grey/black lines) have remained flat or stagnant.
+3.  **Strategic Implication:** The "Alternative Fuel War" is effectively over. The data suggests that infrastructure investment has coalesced around Electric Vehicles. For Tesla, this validates the strategy of aggressive Supercharger expansion—we are not just competing; we are defining the new standard for accessibility.
 
 # Final Thoughts
 
