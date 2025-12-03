@@ -78,15 +78,6 @@ Next, we will examine **three key questions:**
 - Is the infrastructure gap closing? How does the growth of EV charging stations compare to other alternative energy solutions (like CNG, Biodiesel, or Hydrogen)?
 - How can changing the station infrastructure affect pollution and Tesla's revenue?
 
-
-# Which states represent the highest-opportunity markets for Tesla because of their pollution rates?
-
-
-# Is it accessible for people to obtain an EV, and should we target the construction of charging stations as a solution to this problem? 
-
-
-# If we target those markets, what would be the estimated pollution reduction/The estimated revenue increase
-
 # Interactive Graph #1: Pollution vs. EV Adoption Opportunity Map
 
 **Key Question:** Which states show the largest mismatch between pollution levels and EV adoption—highlighting where Tesla should accelerate Supercharger deployment?
@@ -263,7 +254,7 @@ fig1
 ### Analysis of the Trends
 
 1.  **Population Insight:** Bubble size represents state population, showing where EV adoption improvements would have the largest market impact.
-2.  **Trend Line Insight:** The red LOESS curve reveals that EV adoption peaks at moderate pollution levels.At high PM2.5 levels, EV adoption drops sharply, indicating weaker transition in the areas that need it most.
+2.  **Trend Line Insight:** The red LOESS curve reveals that EV adoption peaks at moderate pollution levels. At high PM2.5 levels, EV adoption drops sharply, indicating a weaker transition in the areas that need it most.
 3.  **Structural Barriers:** Low EV adoption in highly polluted states suggests barriers such as limited charging infrastructure, weak incentives, or low awareness.
 4.  **Strategic Opportunity for Tesla:** States in the High Pollution / Low EV Adoption quadrant represent underserved markets. Improving charging access in these regions could accelerate EV adoption and advance Tesla’s environmental mission.
 
