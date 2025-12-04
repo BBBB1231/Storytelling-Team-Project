@@ -1,0 +1,188 @@
+---
+title: "Group6 - Final Project #2 Visualization"
+author:
+  - name: Ben Hsiao (5133), ...
+    role: "Student"
+    email: jh5133@columbia.edu
+    affiliations:
+      - name: Columbia University
+  - name: Dr. Scott Spencer
+    role: "Professor"
+    email: sas2375@columbia.edu
+    affiliations:
+      - name: Columbia University
+date: 12/3/2025
+date-format: long
+format:
+  pdf:
+    toc: true
+    number-sections: true
+    colorlinks: true
+  html:
+    toc: true
+    number-sections: true
+    code-fold: show
+    code-tools: true
+    code-link: true
+    theme:
+      light: flatly
+      dark: darkly
+    embed-resources: true
+execute:
+  eval: true
+  warning: false
+  message: false
+  error: false
+  echo: true
+---
+
+# Preliminary setup {-}
+
+Load libraries to access functions we'll use in this analysis.
+
+
+```{r}
+library(tidyverse)
+library(leaflet)
+library(leaflet.providers)
+library(plotly)
+library(crosstalk)
+library(htmltools)
+```
+
+# Load the datasets
+
+```{r}
+ev_data <- read.csv("ev_registrations.csv", fileEncoding = "UTF-16LE", sep = "\t") # From DOE/BTS
+air_data <- read.csv("epa_air_quality.csv")       # From EPA AQS
+station_data <- read.csv("charging_stations.csv") # From AFDC
+```
+
+# Interactive Visualization #2
+
+```{r}
+# --- 1. DATA PREP ---
+state_ref <- data.frame(
+  Full = toupper(state.name),
+  Abb = state.abb,
+  Lat = state.center$y,
+  Long = state.center$x
+)
+
+# Clean Air Data
+pm_col_name <- grep("PM2\\.5|PM25", names(air_data), value = TRUE)[1]
+air_clean <- air_data %>%
+  select(State, PM25 = all_of(pm_col_name)) %>% 
+  mutate(PM25 = as.numeric(as.character(PM25)), State_Upper = toupper(str_trim(State))) %>%
+  filter(!is.na(PM25)) %>%
+  group_by(State_Upper) %>%
+  summarise(Avg_Pollution = mean(PM25, na.rm = TRUE)) %>%
+  inner_join(state_ref, by = c("State_Upper" = "Full")) %>%
+  select(State_Abb = Abb, Avg_Pollution)
+
+# Clean EV Data
+ev_clean <- ev_data %>%
+  select(State, matches("2023|EV")) %>% rename(EV_Raw = 2) %>%
+  mutate(EV_Count = as.numeric(gsub(",", "", EV_Raw)), State_Upper = toupper(str_trim(State))) %>%
+  group_by(State_Upper) %>%
+  summarise(Total_EVs = sum(EV_Count, na.rm = TRUE)) %>%
+  inner_join(state_ref, by = c("State_Upper" = "Full")) %>%
+  select(State_Abb = Abb, Total_EVs)
+
+# Clean Station Data
+station_agg <- station_data %>%
+  mutate(State_Clean = str_trim(State)) %>%
+  filter(nchar(State_Clean) == 2) %>%
+  group_by(State_Clean) %>%
+  summarise(Total_Ports = n()) %>%
+  inner_join(state_ref, by = c("State_Clean" = "Abb")) %>%
+  select(State_Abb = State_Clean, Total_Ports, Lat, Long)
+
+# --- 2. LOGIC & SORTING ---
+master_data <- station_agg %>%
+  inner_join(ev_clean, by = "State_Abb") %>%
+  inner_join(air_clean, by = "State_Abb") %>%
+  mutate(
+    # Strategy Logic
+    Median_EVs = median(Total_EVs, na.rm = TRUE),
+    Is_Priority = case_when(
+      Avg_Pollution > 9.0 & Total_EVs < Median_EVs ~ "Top Priority",
+      TRUE ~ "Standard Market"
+    ),
+    Is_Priority = factor(Is_Priority, levels = c("Standard Market", "Top Priority")),
+    
+    # Hover Label
+    Label = paste0("<b>", State_Abb, "</b><br>",
+                   "Strategy: ", Is_Priority, "<br>",
+                   "Pollution: ", round(Avg_Pollution, 2), "<br>",
+                   "Stations: ", Total_Ports)
+  ) %>%
+  arrange(Is_Priority) 
+
+# --- 3. VISUALS ---
+
+sd <- SharedData$new(master_data, key = ~State_Abb, group = "Tesla_Hybrid")
+
+# CHART COLORS: Strategy (Red/Grey)
+chart_colors <- c("Standard Market" = "#999999", "Top Priority" = "#E31937")
+
+# MAP COLORS: Pollution Gradient (Blue -> Yellow -> Red)
+# This creates a color palette function based on the Pollution Number
+map_pal <- colorNumeric(palette = c("#00FFFF", "#FFFF00", "#FF0000"), domain = master_data$Avg_Pollution)
+
+# A. CHART (Strategy View)
+scatter <- plot_ly(sd, x = ~Total_Ports, y = ~Total_EVs,
+                   color = ~Is_Priority, colors = chart_colors,
+                   marker = list(
+                     size = 18, 
+                     opacity = 0.9,
+                     line = list(
+                       color = ~ifelse(Is_Priority == "Top Priority", "#ff0000", "white"),
+                       width = ~ifelse(Is_Priority == "Top Priority", 3, 1)
+                     )
+                   ),
+                   text = ~Label, hoverinfo = "text",
+                   type = "scatter", mode = "markers") %>%
+  layout(
+    title = list(text = "<b>Strategic Matrix</b> (Click Red Dots to Locate)", font = list(size = 14)),
+    xaxis = list(title = "Infrastructure (Stations)", type = "log"),
+    yaxis = list(title = "EV Adoption (Sales)", type = "log"),
+    legend = list(orientation = "h", x = 0, y = -0.2),
+    plot_bgcolor = "#f5f5f5"
+  ) %>%
+  highlight(on = "plotly_click", opacityDim = 1, persistent = FALSE)
+
+# B. MAP (Pollution View)
+map <- leaflet(sd, width = "100%", height = 500) %>%
+  addProviderTiles(providers$CartoDB.DarkMatter) %>%
+  addCircleMarkers(
+    lng = ~Long, lat = ~Lat,
+    # Priority Dots are Bigger (10px), others are small (6px)
+    radius = ~ifelse(Is_Priority == "Top Priority", 10, 6),
+    
+    # COLOR LOGIC: Use the Map Palette (Gradient) based on Pollution
+    fillColor = ~map_pal(Avg_Pollution),
+    color = "white", # White border for contrast
+    
+    fillOpacity = 0.9,
+    weight = 1,
+    popup = ~Label
+  ) %>%
+  addLegend("bottomright", 
+            pal = map_pal, values = ~Avg_Pollution,
+            title = "Pollution Level (PM2.5)",
+            opacity = 1)
+
+# ASSEMBLE
+bscols(
+  widths = c(5, 7),
+  list(
+    div(style="padding-bottom:10px; font-family:Arial; color:#333;", 
+        h4("Strategic Filter"),
+        p("Left: Priority Markets (Red). Right: Pollution Heatmap.")),
+    scatter
+  ),
+  map
+)
+```
+
